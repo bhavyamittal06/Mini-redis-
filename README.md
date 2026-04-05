@@ -34,3 +34,25 @@ EXPIRE key seconds
 - Asyncio instead of threading — handle 10k+ connections
 - KEYS * pattern matching
 - Benchmarking — ops/sec under load
+  
+### Why RLock over Lock
+RLock is reentrant — the same thread can acquire it multiple 
+times without deadlocking. As functions call other locking 
+functions, RLock prevents accidental self-deadlock.
+
+### Why AOF + Snapshot together
+AOF alone = durable but slow recovery on restart.
+Snapshot alone = fast recovery but loses up to 30 seconds of data.
+Together: load snapshot for bulk restore, replay AOF for 
+recent commands. Same approach real Redis uses.
+
+### What breaks at scale
+One thread per connection fails at ~10k connections.
+Next step: asyncio with epoll — handles 100k+ connections
+on a single thread. That's how real Redis does it.
+
+### What I would build next
+- KEYS * pattern matching
+- Asyncio rewrite for scale
+- Replication — master/replica
+- Benchmark script — measure ops/sec under load
